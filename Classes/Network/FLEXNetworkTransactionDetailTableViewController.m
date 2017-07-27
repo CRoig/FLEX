@@ -320,7 +320,7 @@ typedef UIViewController *(^FLEXNetworkDetailRowSelectionFuture)(void);
 
     FLEXNetworkDetailRow *mimeTypeRow = [[FLEXNetworkDetailRow alloc] init];
     mimeTypeRow.title = @"MIME Type";
-    mimeTypeRow.detailText = transaction.response.MIMEType;
+    mimeTypeRow.detailText = transaction.response.MIMEType ? : @"application/json";
     [rows addObject:mimeTypeRow];
 
     FLEXNetworkDetailRow *mechanismRow = [[FLEXNetworkDetailRow alloc] init];
