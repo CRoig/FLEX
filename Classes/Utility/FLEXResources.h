@@ -29,5 +29,6 @@
 + (UIImage *)videoIcon;
 + (UIImage *)xmlIcon;
 + (UIImage *)binaryIcon;
++ (UIImage *)pushIcon;
 
 @end

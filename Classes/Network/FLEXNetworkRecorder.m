@@ -260,7 +260,7 @@ NSString *const kFLEXNetworkRecorderResponseCacheLimitDefaultsKey = @"com.flex.r
         
         transaction.startTime = startDate;
         transaction.transactionState = FLEXNetworkTransactionStateFinished;
-        transaction.responseThumbnail = [FLEXResources jsonIcon];
+        transaction.responseThumbnail = [FLEXResources pushIcon];
         transaction.receivedDataLength = [messageBody length];
         
         [self.orderedTransactions insertObject:transaction atIndex:0];
@@ -294,7 +294,7 @@ NSString *const kFLEXNetworkRecorderResponseCacheLimitDefaultsKey = @"com.flex.r
         
         transaction.startTime = startDate;
         transaction.transactionState = FLEXNetworkTransactionStateFinished;
-        transaction.responseThumbnail = [FLEXResources jsonIcon];
+        transaction.responseThumbnail = [FLEXResources pushIcon];
         transaction.receivedDataLength = [messageBody length];
         
         [self.orderedTransactions insertObject:transaction atIndex:0];
