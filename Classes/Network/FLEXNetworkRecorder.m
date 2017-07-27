@@ -12,6 +12,8 @@
 #import "FLEXUtility.h"
 #import "FLEXResources.h"
 
+#import "SRWebSocket.h"
+
 NSString *const kFLEXNetworkRecorderNewTransactionNotification = @"kFLEXNetworkRecorderNewTransactionNotification";
 NSString *const kFLEXNetworkRecorderTransactionUpdatedNotification = @"kFLEXNetworkRecorderTransactionUpdatedNotification";
 NSString *const kFLEXNetworkRecorderUserInfoTransactionKey = @"transaction";
@@ -231,6 +233,74 @@ NSString *const kFLEXNetworkRecorderResponseCacheLimitDefaultsKey = @"com.flex.r
         transaction.error = error;
 
         [self postUpdateNotificationForTransaction:transaction];
+    });
+}
+
+- (void)recordSocketSubscriptionsWithRequestID:(NSString *)requestID socket:(SRWebSocket *)socket messageBody:(NSData *)messageBody
+{
+    NSDate *startDate = [NSDate date];
+    
+    dispatch_async(self.queue, ^{
+        FLEXNetworkTransaction *transaction = [[FLEXNetworkTransaction alloc] init];
+        transaction.requestID = requestID;
+        
+        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+        request.URL = socket.url;
+        id socketController = socket.delegate;
+        
+        if ([socketController respondsToSelector:@selector(delegate)]) {
+            id targetClass = [socketController performSelector:@selector(delegate)];
+            request.URL = [request.URL URLByAppendingPathComponent:NSStringFromClass([targetClass class])];
+        }
+        
+        request.HTTPMethod = @"FETCH";
+        transaction.request = [request copy];
+        
+        [self recordLoadingFinishedWithRequestID:requestID responseBody:messageBody];
+        
+        transaction.startTime = startDate;
+        transaction.transactionState = FLEXNetworkTransactionStateFinished;
+        transaction.responseThumbnail = [FLEXResources jsonIcon];
+        transaction.receivedDataLength = [messageBody length];
+        
+        [self.orderedTransactions insertObject:transaction atIndex:0];
+        [self.networkTransactionsForRequestIdentifiers setObject:transaction forKey:requestID];
+        
+        [self postNewTransactionNotificationWithTransaction:transaction];
+    });
+}
+
+- (void)recordSocketMessageWithRequestID:(NSString *)requestID socket:(SRWebSocket *)socket messageBody:(NSData *)messageBody
+{
+    NSDate *startDate = [NSDate date];
+    
+    dispatch_async(self.queue, ^{
+        FLEXNetworkTransaction *transaction = [[FLEXNetworkTransaction alloc] init];
+        transaction.requestID = requestID;
+        
+        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+        request.URL = socket.url;
+        id socketController = socket.delegate;
+
+        if ([socketController respondsToSelector:@selector(delegate)]) {
+            id targetClass = [socketController performSelector:@selector(delegate)];
+            request.URL = [request.URL URLByAppendingPathComponent:NSStringFromClass([targetClass class])];
+        }
+        
+        request.HTTPMethod = @"PUSH";
+        transaction.request = [request copy];
+        
+        [self recordLoadingFinishedWithRequestID:requestID responseBody:messageBody];
+        
+        transaction.startTime = startDate;
+        transaction.transactionState = FLEXNetworkTransactionStateFinished;
+        transaction.responseThumbnail = [FLEXResources jsonIcon];
+        transaction.receivedDataLength = [messageBody length];
+        
+        [self.orderedTransactions insertObject:transaction atIndex:0];
+        [self.networkTransactionsForRequestIdentifiers setObject:transaction forKey:requestID];
+        
+        [self postNewTransactionNotificationWithTransaction:transaction];
     });
 }
 

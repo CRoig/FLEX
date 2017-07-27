@@ -14,7 +14,7 @@ extern NSString *const kFLEXNetworkRecorderTransactionUpdatedNotification;
 extern NSString *const kFLEXNetworkRecorderUserInfoTransactionKey;
 extern NSString *const kFLEXNetworkRecorderTransactionsClearedNotification;
 
-@class FLEXNetworkTransaction;
+@class FLEXNetworkTransaction, SRWebSocket;
 
 @interface FLEXNetworkRecorder : NSObject
 
@@ -58,6 +58,13 @@ extern NSString *const kFLEXNetworkRecorderTransactionsClearedNotification;
 
 /// Call when HTTP request has failed to load.
 - (void)recordLoadingFailedWithRequestID:(NSString *)requestID error:(NSError *)error;
+
+/// Call when Socket Message has been received.
+- (void)recordSocketSubscriptionsWithRequestID:(NSString *)requestID socket:(SRWebSocket *)socket messageBody:(NSData *)messageBody;
+
+/// Call when Socket Message has been received.
+- (void)recordSocketMessageWithRequestID:(NSString *)requestID socket:(SRWebSocket *)socket messageBody:(NSData *)messageBody;
+
 
 /// Call to set the request mechanism anytime after recordRequestWillBeSent... has been called.
 /// This string can be set to anything useful about the API used to make the request.

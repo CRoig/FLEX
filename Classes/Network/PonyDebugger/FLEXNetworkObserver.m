@@ -16,6 +16,8 @@
 #import "FLEXNetworkRecorder.h"
 #import "FLEXUtility.h"
 
+#import "SRWebSocket.h"
+
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <dispatch/queue.h>
@@ -63,6 +65,12 @@ didBecomeDownloadTask:(NSURLSessionDownloadTask *)downloadTask delegate:(id <NSU
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location data:(NSData *)data delegate:(id <NSURLSessionDelegate>)delegate;
 
 - (void)URLSessionTaskWillResume:(NSURLSessionTask *)task;
+
+@end
+
+@interface FLEXNetworkObserver (SRWebSocketHelpers)
+
+- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message;
 
 @end
 
@@ -174,7 +182,8 @@ didBecomeDownloadTask:(NSURLSessionDownloadTask *)downloadTask delegate:(id <NSU
             @selector(URLSession:task:didCompleteWithError:),
             @selector(URLSession:dataTask:didBecomeDownloadTask:),
             @selector(URLSession:downloadTask:didWriteData:totalBytesWritten:totalBytesExpectedToWrite:),
-            @selector(URLSession:downloadTask:didFinishDownloadingToURL:)
+            @selector(URLSession:downloadTask:didFinishDownloadingToURL:),
+            @selector(webSocket:didReceiveMessage:)
         };
 
         const int numSelectors = sizeof(selectors) / sizeof(SEL);
@@ -224,6 +233,8 @@ didBecomeDownloadTask:(NSURLSessionDownloadTask *)downloadTask delegate:(id <NSU
 
         [self injectIntoNSURLSessionAsyncDataAndDownloadTaskMethods];
         [self injectIntoNSURLSessionAsyncUploadTaskMethods];
+        
+        [self injectIntoWebSocketSendDataMethods];
     });
 }
 
@@ -249,6 +260,9 @@ didBecomeDownloadTask:(NSURLSessionDownloadTask *)downloadTask delegate:(id <NSU
     // Download tasks
     [self injectDownloadTaskDidWriteDataIntoDelegateClass:cls];
     [self injectDownloadTaskDidFinishDownloadingIntoDelegateClass:cls];
+    
+    // SRSocket
+    [self injectWebSocketDidReceiveMessageIntoDelegateClass:cls];
 }
 
 + (void)injectIntoNSURLConnectionCancel
@@ -476,6 +490,35 @@ didBecomeDownloadTask:(NSURLSessionDownloadTask *)downloadTask delegate:(id <NSU
             
             [FLEXUtility replaceImplementationOfKnownSelector:selector onClass:class withBlock:asyncUploadTaskSwizzleBlock swizzledSelector:swizzledSelector];
         }
+    });
+}
+
++ (void)injectIntoWebSocketSendDataMethods
+{
+    static dispatch_once_t onceToken;
+
+    dispatch_once(&onceToken, ^{
+        Class class = [SRWebSocket class];
+        SEL selector = @selector(send:);
+        SEL swizzledSelector = [FLEXUtility swizzledSelectorForSelector:selector];
+
+        void (^ sendSwizzledBlock)(SRWebSocket *, NSData *) = ^void (SRWebSocket *slf, NSData *data) {
+            if ([FLEXNetworkObserver isEnabled]) {
+                NSString *requestID = [self nextRequestID];
+                NSString *mechanism = [self mechansimFromClassMethod:selector onClass:class];
+                [[FLEXNetworkRecorder defaultRecorder] recordSocketMessageWithRequestID:requestID
+                                                                                 socket:slf
+                                                                            messageBody:data];
+                [[FLEXNetworkRecorder defaultRecorder] recordMechanism:mechanism forRequestID:requestID];
+            }
+
+            ((void (*)(id, SEL, id))objc_msgSend)(slf, swizzledSelector, data);
+        };
+
+        [FLEXUtility replaceImplementationOfKnownSelector:selector
+                                                  onClass:class
+                                                withBlock:sendSwizzledBlock
+                                         swizzledSelector:swizzledSelector];
     });
 }
 
@@ -863,6 +906,30 @@ didBecomeDownloadTask:(NSURLSessionDownloadTask *)downloadTask delegate:(id <NSU
 
     [FLEXUtility replaceImplementationOfSelector:selector withSelector:swizzledSelector forClass:cls withMethodDescription:methodDescription implementationBlock:implementationBlock undefinedBlock:undefinedBlock];
 
+}
+
++ (void)injectWebSocketDidReceiveMessageIntoDelegateClass:(Class)cls
+{
+    SEL selector = @selector(webSocket:didReceiveMessage:);
+    SEL swizzledSelector = [FLEXUtility swizzledSelectorForSelector:selector];
+    
+    void (^ didReceiveMessageSwizzleBlock)(Class, id, NSData *) = ^void (Class slf, id socket, NSData *message) {
+        if ([FLEXNetworkObserver isEnabled]) {
+            NSString *requestID = [self nextRequestID];
+            NSString *mechanism = [self mechansimFromClassMethod:selector onClass:cls];
+            [[FLEXNetworkRecorder defaultRecorder] recordSocketMessageWithRequestID:requestID
+                                                                             socket:socket
+                                                                        messageBody:message];
+            [[FLEXNetworkRecorder defaultRecorder] recordMechanism:mechanism forRequestID:requestID];
+        }
+        
+        ((void (*)(id, SEL, id, id))objc_msgSend)(slf, swizzledSelector, socket, message);
+    };
+    
+    [FLEXUtility replaceImplementationOfKnownSelector:selector
+                                              onClass:cls
+                                            withBlock:didReceiveMessageSwizzleBlock
+                                     swizzledSelector:swizzledSelector];
 }
 
 static char const * const kFLEXRequestIDKey = "kFLEXRequestIDKey";
