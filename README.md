@@ -1,12 +1,14 @@
-# FLEX
-[![CocoaPods](https://img.shields.io/cocoapods/v/FLEX.svg)](http://cocoapods.org/?q=FLEX)
- [![CocoaPods](https://img.shields.io/cocoapods/l/FLEX.svg)](https://github.com/Flipboard/FLEX/blob/master/LICENSE)
- [![CocoaPods](https://img.shields.io/cocoapods/p/FLEX.svg)]()
- [![Twitter: @ryanolsonk](https://img.shields.io/badge/contact-@ryanolsonk-blue.svg?style=flat)](https://twitter.com/ryanolsonk)
- [![Build Status](https://travis-ci.org/Flipboard/FLEX.svg?branch=master)](https://travis-ci.org/Flipboard/FLEX)
- [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+# FLEX-SocketRocket
+[![CocoaPods](https://img.shields.io/cocoapods/v/FLEX-SocketRocket.svg)](https://cocoapods.org/pods/FLEX-SocketRocket)
+[![CocoaPods](https://img.shields.io/cocoapods/l/FLEX-SocketRocket.svg)](https://github.com/Flipboard/FLEX/blob/master/LICENSE)
+[![CocoaPods](https://img.shields.io/cocoapods/p/FFLEX-SocketRocket.svg)]()
+[![Twitter: @croigg](https://img.shields.io/badge/contact-@croigg-blue.svg?style=flat)](https://twitter.com/croigg)
+[![Build Status](https://travis-ci.org/Flipboard/FLEX.svg?branch=master)](https://travis-ci.org/Flipboard/FLEX)
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
-FLEX (Flipboard Explorer) is a set of in-app debugging and exploration tools for iOS development. When presented, FLEX shows a toolbar that lives in a window above your application. From this toolbar, you can view and modify nearly every piece of state in your running application.
+**FLEX (Flipboard Explorer)** is a set of in-app debugging and exploration tools for iOS development. When presented, FLEX shows a toolbar that lives in a window above your application. From this toolbar, you can view and modify nearly every piece of state in your running application.
+
+**Socket Rocket** plugin adds the feature to track both sent or received messages from a websocket in this case using [SocketRocket](https://github.com/facebook/SocketRocket) library.
 
 ![View Hierarchy Exploration](http://engineering.flipboard.com/assets/flex/basic-view-exploration.gif)
 
@@ -17,6 +19,7 @@ FLEX (Flipboard Explorer) is a set of in-app debugging and exploration tools for
 - Dynamically modify many properties and ivars.
 - Dynamically call instance and class methods.
 - Observe detailed network request history with timing, headers, and full responses.
+- Explore in detail SocketRocket push notifications.
 - Add your own simulator keyboard shortcuts.
 - View system log messages (e.g. from `NSLog`).
 - Access any live object via a scan of the heap.
@@ -71,6 +74,11 @@ Once a view is selected, you can tap on the info bar below the toolbar to presen
 When enabled, network debugging allows you to view all requests made using NSURLConnection or NSURLSession. Settings allow you to adjust what kind of response bodies get cached and the maximum size limit of the response cache. You can choose to have network debugging enabled automatically on app launch. This setting is persisted across launches.
 
 ![Network History](http://engineering.flipboard.com/assets/flex/network-history.gif)
+
+### SocketRocket History
+When network history is enabled, pushes coming from socket will be listed in the transaction list. Push notifications are labeled with a bell. A part from timestamp and size, the Socket url is displayed to easily identify it. In addition, if web socket is implemented in a controller, delegate class name is also presented to filter notification from different classes.
+
+![Socket History](https://github.com/CRoig/FLEX/blob/develop/README-images/socket-notifications.gif)
 
 ### All Objects on the Heap
 FLEX queries malloc for all the live allocated memory blocks and searches for ones that look like objects. You can see everything from here.
