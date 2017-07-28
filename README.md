@@ -1,9 +1,9 @@
 # FLEX-SocketRocket
 [![CocoaPods](https://img.shields.io/cocoapods/v/FLEX-SocketRocket.svg)](https://cocoapods.org/pods/FLEX-SocketRocket)
 [![CocoaPods](https://img.shields.io/cocoapods/l/FLEX-SocketRocket.svg)](https://github.com/Flipboard/FLEX/blob/master/LICENSE)
-[![CocoaPods](https://img.shields.io/cocoapods/p/FFLEX-SocketRocket.svg)]()
+[![CocoaPods](https://img.shields.io/cocoapods/p/FLEX-SocketRocket.svg)]()
 [![Twitter: @croigg](https://img.shields.io/badge/contact-@croigg-blue.svg?style=flat)](https://twitter.com/croigg)
-[![Build Status](https://travis-ci.org/Flipboard/FLEX.svg?branch=master)](https://travis-ci.org/Flipboard/FLEX)
+[![Build Status](https://travis-ci.org/CRoig/FLEX-SocketRocket.svg?branch=master)](https://travis-ci.org/CRoig/FLEX-SocketRocket)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
 **FLEX (Flipboard Explorer)** is a set of in-app debugging and exploration tools for iOS development. When presented, FLEX shows a toolbar that lives in a window above your application. From this toolbar, you can view and modify nearly every piece of state in your running application.
